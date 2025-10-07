@@ -1,7 +1,6 @@
 # Don't Remove Credit @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot @Tech_VJ
 # Ask Doubt on telegram @KingVJ01
-# Clone Code Credit : YT - @Tech_VJ / TG - @VJ_Bots / GitHub - @VJBots
 
 import sys, glob, importlib, logging, logging.config, pytz, asyncio
 from pathlib import Path
@@ -36,19 +35,13 @@ from TechVJ.bot.clients import initialize_clients
 ppath = "plugins/*.py"
 files = glob.glob(ppath)
 
-# ✅ Start the main bot client
-TechVJBot.start()
-
-# ✅ Proper event loop initialization for Python 3.11+
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
 
 async def start():
     print("\nInitalizing Your Bot")
     bot_info = await TechVJBot.get_me()
     await initialize_clients()
 
-    # Import all plugin files
+    # Import all plugin files dynamically
     for name in files:
         with open(name) as a:
             patt = Path(a.name)
@@ -61,16 +54,15 @@ async def start():
             sys.modules["plugins." + plugin_name] = load
             print("Tech VJ Imported => " + plugin_name)
 
-    # Keepalive ping for Heroku or Koyeb
     if ON_HEROKU:
         asyncio.create_task(ping_server())
 
-    print(f"Bot started successfully as @{bot_info.username}")
+    print(f"✅ Bot started successfully as @{bot_info.username}")
 
-# ✅ Run the async start() and keep bot alive with idle()
+
 if __name__ == "__main__":
-    try:
-        loop.run_until_complete(start())
-        idle()  # <--- Keeps the bot running and responsive
-    except KeyboardInterrupt:
-        print("Bot stopped manually.")
+    # ✅ Let Pyrogram manage its own event loop and context
+    TechVJBot.start()
+    TechVJBot.loop.create_task(start())  # use the same loop Pyrogram uses
+    idle()  # keeps bot alive
+    TechVJBot.stop()
