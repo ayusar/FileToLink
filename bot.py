@@ -28,6 +28,7 @@ from Script import script
 from datetime import date, datetime 
 from aiohttp import web
 from plugins import web_server
+import asyncio 
 
 from TechVJ.bot import TechVJBot
 from TechVJ.util.keepalive import ping_server
@@ -36,7 +37,9 @@ from TechVJ.bot.clients import initialize_clients
 ppath = "plugins/*.py"
 files = glob.glob(ppath)
 TechVJBot.start()
-loop = asyncio.get_event_loop()
+
+if __name__ == "__main__":
+    asyncio.run(main())
 
 
 async def start():
@@ -80,3 +83,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
     
+
