@@ -36,16 +36,18 @@ from TechVJ.bot.clients import initialize_clients
 ppath = "plugins/*.py"
 files = glob.glob(ppath)
 
-# Removed old loop usage
-# TechVJBot.start()
-# loop = asyncio.get_event_loop()
 
 async def start():
     print('\n')
     print('Initializing Your Bot')
+    
+    # START THE BOT BEFORE ANY ACTION
+    await TechVJBot.start()
+    
     bot_info = await TechVJBot.get_me()
     await initialize_clients()
     
+    # Load plugins dynamically
     for name in files:
         with open(name) as a:
             patt = Path(a.name)
@@ -58,9 +60,11 @@ async def start():
             sys.modules["plugins." + plugin_name] = load
             print("Tech VJ Imported => " + plugin_name)
     
+    # Keepalive for Heroku or similar
     if ON_HEROKU:
         asyncio.create_task(ping_server())
     
+    # Store bot info in temp
     me = await TechVJBot.get_me()
     temp.BOT = TechVJBot
     temp.ME = me.id
@@ -74,17 +78,19 @@ async def start():
     
     await TechVJBot.send_message(chat_id=LOG_CHANNEL, text=script.RESTART_TXT.format(today, time))
     
+    # Start web server
     app = web.AppRunner(await web_server())
     await app.setup()
     bind_address = "0.0.0.0"
     await web.TCPSite(app, bind_address, PORT).start()
     
+    # Keep the bot running
     await idle()
 
 
 if __name__ == '__main__':
     try:
-        # Modern asyncio event loop for Python 3.10+
+        # Use asyncio.run for modern Python versions
         asyncio.run(start())
     except KeyboardInterrupt:
         logging.info('Service Stopped Bye 👋')
